@@ -20,6 +20,9 @@
           <div style="margin-left: 10px">{{ scope.row.title }}</div>
         </template>
       </el-table-column>
+      <el-table-column prop="create_date" label="日期" width="180">
+        <template slot-scope="scope">{{scope.row.created|dataFormat}}</template>
+      </el-table-column>
       <el-table-column label="昵称" width="500">
         <template slot-scope="scope">
           <div style="margin-left: 10px">{{ scope.row.user.nickname || '未命名'}}</div>
@@ -36,14 +39,25 @@
     <!-- 分页 -->
     <div class="block">
       <div class="demonstration" style="height:21px"></div>
+      <!--<el-pagination-->
+        <!--:page-sizes="[5, 10, 20, 30]"-->
+        <!--:total="100"-->
+        <!--@current-change="handleCurrentChange"-->
+        <!--@size-change="handleSizeChange"-->
+        <!--background-->
+        <!--layout="total,sizes,prev, pager, next"-->
+      <!--&gt;</el-pagination>-->
+
       <el-pagination
-        :page-sizes="[5, 10, 20, 30]"
-        :total="100"
-        @current-change="handleCurrentChange"
         @size-change="handleSizeChange"
-        background
-        layout="total,sizes,prev, pager, next"
-      ></el-pagination>
+        @current-change="handleCurrentChange"
+        :current-page="pageIndex"
+        :page-sizes="[2, 4, 6, 8]"
+        :page-size="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        style="margin-top:20px">
+      </el-pagination>
     </div>
   </div>
 </template>
@@ -53,11 +67,22 @@ export default {
   data() {
     return {
       tableData: [],
+      total: 0,
       pageIndex: 1,
       pageSize: 2
     }
   },
   methods: {
+    filters: {
+      dataFormat: (data, spe) => {
+        data = new Date(data)
+        spe = spe || '/'
+        var nn = data.getFullYear()
+        var mm = data.getMonth() + 1
+        var dd = data.getDate()
+        return nn + spe + mm + spe + dd
+      }
+    },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`)
       this.pageSize = val
@@ -79,7 +104,10 @@ export default {
       }).then(res => {
         // const { data } = res.data
         // console.log(data)
-        this.tableData = res.data
+        console.log('getPostList')
+        console.log(res.data.data)
+        this.total = res.data.total
+        this.tableData = res.data.data
         console.log(this.tableData)
       })
     },
